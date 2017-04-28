@@ -1,0 +1,38 @@
+{
+  "name": "tomato-jquery",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/po-to/sample.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/po-to/sample/issues"
+  },
+  "homepage": "https://github.com/po-to/sample#readme",
+  "devDependencies": {
+    "@po-to/tomato": "^0.1.0",
+    "@types/jquery": "^2.0.41",
+    "css-loader": "^0.26.2",
+    "file-loader": "^0.10.1",
+    "gulp": "^3.9.1",
+    "gulp-typedoc": "^2.0.2",
+    "gulp-typescript": "^3.1.5",
+    "html-loader": "^0.4.5",
+    "merge2": "^1.0.2",
+    "node-sass": "^4.5.2",
+    "run-sequence": "^1.2.2",
+    "sass-loader": "^6.0.2",
+    "style-loader": "^0.13.2",
+    "typedoc": "^0.5.10",
+    "typescript": "^2.2.1",
+    "url-loader": "^0.5.8",
+    "webpack-stream": "^3.2.0"
+  }
+}

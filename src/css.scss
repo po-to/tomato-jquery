@@ -1,0 +1,219 @@
+ $DialogEffectDuration: 200ms;
+ $DialogEffectTiming: ease-out;
+ $DialogMaskOpacity: 0.5;
+ $DialogShadow: 0 0 5px rgba(0, 0, 0, .6);
+ $TurnEffectDuration: 300ms;
+ $TurnEffectTiming:ease-in;
+
+
+@keyframes tdom-turnContainer-tdom-slide- {
+    from {transform: translateX(100%);}
+    to {transform: none;}
+}
+@keyframes tdom-turnContainer-tdom-slide-tdom-back {
+    from {transform: translateX(-100%);}
+    to {transform: none;}
+}
+@keyframes tdom-turnContainer-tdom-cover- {
+    from {transform: translateX(100%);}
+    to {transform: none;}
+}
+@keyframes tdom-turnContainer-tdom-cover-tdom-back {
+    from {transform: translateX(-100%);}
+    to {transform: none;}
+}
+
+.tdom-turnContainer{
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
+    > *:first-child{
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        display: none;
+    }
+    &.tdom-animation{
+        > *:first-child{
+            display: block;
+        }
+    }
+
+    &.tdom-slide{
+        > *:first-child{
+            left: -100%;
+        }
+        &.tdom-animation{
+            > *{
+                animation: tdom-turnContainer-tdom-slide- 1000ms ease-out forwards
+            }
+        }
+        &.tdom-back{
+            > *:first-child{
+                left: 100%;
+            }
+            &.tdom-animation{
+                > *{
+                    animation: tdom-turnContainer-tdom-slide-tdom-back 1000ms ease-out forwards
+                }
+            }
+        }
+    }
+    &.tdom-cover{
+        > *:first-child{
+            left: 0;
+        }
+        &.tdom-animation{
+            > *:last-child{
+                animation: tdom-turnContainer-tdom-cover- 1000ms ease-out forwards
+            }
+        }
+        &.tdom-back{
+            &.tdom-animation{
+                > *:last-child{
+                    animation: tdom-turnContainer-tdom-cover-tdom-back 1000ms ease-out forwards
+                }
+            }
+        }
+    }
+     
+}
+
+@keyframes tdom-dialog-show-mask {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+@keyframes tdom-dialog-hide-mask {
+    from {opacity: 1;}
+    to {opacity: 0;}
+}
+@keyframes tdom-dialog-show-pt-scale {
+    from {opacity: 0;transform:scale(0.5,0.5);}
+    to {opacity: 1;transform: none;}
+}
+@keyframes tdom-dialog-hide-pt-scale {
+    from {opacity: 1;transform:none;}
+    to {opacity: 0;transform: scale(0.5,0.5);}
+}
+@keyframes tdom-dialog-show-pt-slideLeft {
+    from {transform:translateX(100%);}
+    to {transform: none;}
+}
+@keyframes tdom-dialog-hide-pt-slideLeft {
+    from {transform:none;}
+    to {transform:translateX(100%);}
+}
+
+.pt-mask{
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    background: rgba(0,0,0,0.5);
+    text-align: center;
+    display: none;
+}
+.pt-mask{
+    filter:progid:DXImageTransform.Microsoft.gradient(startColorstr=#7f000000,endColorstr=#7f000000);
+}
+.pt-mask:before{
+    font-size: 0;
+    content: ".";
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+}
+:root .pt-mask{
+    filter: none;
+}
+:root .pt-mask:before{
+    content: none;
+}
+.pt-application{
+    > .pt-mask{
+        &.pt-busy{
+            display: block;
+        }
+    }
+}
+.tdom-dialog{
+    position: relative;
+    > .pt-dialog{
+        position: fixed;
+        background: transparent;
+        box-shadow: 5px 5px 5px #000;
+        > *:first-child{
+            height: 100%;
+            width: 100%;
+        }
+        &.tdom-wrapWidth{
+            > *:first-child{
+                width: auto;
+            }
+        }
+        &.tdom-wrapHeight{
+            > *:first-child{
+                height: auto;
+            }
+        }
+    }
+    &.pt-masked > .pt-mask{display: block;}
+    &.pt-Closed{
+        display: none;
+    }
+    .pt-body{
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+}
+
+
+.tdom-dialog{
+    &.tdom-animation-show{
+        > .pt-dialog{
+            box-shadow:none;
+            overflow: hidden;
+        }
+        > .pt-mask {
+            animation: tdom-dialog-show-mask 1000ms ease-out forwards
+        }
+    }
+    &.tdom-animation-hide{
+        > .pt-dialog{
+            box-shadow:none;
+            overflow: hidden;
+        }
+        > .pt-mask {
+            animation: tdom-dialog-hide-mask 1000ms ease-out forwards
+        }
+    }
+    &.pt-scale{
+        &.tdom-animation-show{
+            > .pt-dialog > *:first-child{
+                animation: tdom-dialog-show-pt-scale 1000ms ease-out forwards
+            }
+        }
+        &.tdom-animation-hide{
+            > .pt-dialog  > *:first-child{
+                animation: tdom-dialog-hide-pt-scale 1000ms ease-out forwards
+            }
+        }
+    }
+    &.pt-slideLeft{
+        &.tdom-animation-show{
+            > .pt-dialog > *:first-child{
+                animation: tdom-dialog-show-pt-slideLeft 1000ms ease-out forwards
+            }
+        }
+        &.tdom-animation-hide{
+            > .pt-dialog  > *:first-child{
+                animation: tdom-dialog-hide-pt-slideLeft 1000ms ease-out forwards
+            }
+        }
+    }
+}
