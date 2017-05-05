@@ -112,26 +112,26 @@ return /******/ (function(modules) { // webpackBootstrap
 	        setZIndex: function (index) {
 	            this.css('z-index', index + dialogZIndexStart);
 	        },
-	        getVPID: function () {
-	            var str = this.attr("data-vpid");
+	        getVID: function () {
+	            var str = this.attr("data-vid");
 	            if (!str) {
-	                str = "vp" + (autoID++);
-	                this.setVPID(str);
+	                str = "v" + (autoID++);
+	                this.setVID(str);
 	            }
 	            return str;
 	        },
-	        setVPID: function (id) {
-	            this.attr("data-vpid", id);
+	        setVID: function (id) {
+	            this.attr("data-vid", id);
 	        },
-	        getVPCON: function () {
-	            return this.attr("data-vpcon") || "";
+	        getVCON: function () {
+	            return this.attr("data-vcon") || "";
 	        },
 	        getSUBS: function () {
 	            var container = this[0];
-	            return this.find("[data-vpid]").get().filter(function (div) {
+	            return this.find("[data-vid]").get().filter(function (div) {
 	                while (div.parentNode != container) {
 	                    div = div.parentNode;
-	                    if (div.getAttribute("data-vpid")) {
+	                    if (div.getAttribute("data-vid")) {
 	                        return false;
 	                    }
 	                }
@@ -198,20 +198,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	        //return {width:document.documentElement.clientWidth,height:zoomLevel?Math.round(window.innerHeight * zoomLevel):document.documentElement.clientHeight};
 	    }
 	    exports.getWindowSize = getWindowSize;
-	    var VPresenter = (function (_super) {
-	        __extends(VPresenter, _super);
-	        function VPresenter(view, parent, vpid) {
-	            var _this = _super.call(this, view, parent, vpid) || this;
+	    var View = (function (_super) {
+	        __extends(View, _super);
+	        function View(viewComponent, parent, vid) {
+	            var _this = _super.call(this, viewComponent, parent, vid) || this;
 	            _this._els = {};
 	            return _this;
 	        }
-	        VPresenter.prototype.find = function (str) {
-	            return this.view.find(str);
+	        View.prototype.find = function (str) {
+	            return this.viewComponent.find(str);
 	        };
 	        // setInstallEffect(isBack:boolean){
 	        //     this.view.attr('data-back', isBack?"true":'');
-	        //     if(this.isWholeVPresenter()){
-	        //         let mod:tomato.WholeVPresenter = this;
+	        //     if(this.isWholeView()){
+	        //         let mod:tomato.WholeView = this;
 	        //         let jdom:JQuery|null = mod.getHeader() as JQuery;
 	        //         jdom && jdom.attr('data-back', isBack?"true":'');
 	        //         jdom = mod.getFooter() as JQuery;
@@ -220,10 +220,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        //         jdom && jdom.attr('data-back', isBack?"true":'');
 	        //     }
 	        // }
-	        VPresenter.prototype.getInstallEffect = function () {
-	            return !!this.view.attr('data-back');
+	        View.prototype.getInstallEffect = function () {
+	            return !!this.viewComponent.attr('data-back');
 	        };
-	        VPresenter.prototype._evt_open = function (data) {
+	        View.prototype._evt_open = function (data) {
 	            var options;
 	            if (typeof data == "string") {
 	                options = { url: data };
@@ -235,18 +235,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (options.target == exports.DialogTarget.Self) {
 	                target = this.getDialog();
 	            }
-	            tomato.asyncGetVPresenter(options.url).then(function (vp) {
+	            tomato.asyncGetView(options.url).then(function (vp) {
 	                open(vp, target);
 	            });
 	            return false;
 	        };
-	        VPresenter.prototype._getElements = function () {
+	        View.prototype._getElements = function () {
 	            return this.find("[dom]").groupBy("dom");
 	        };
-	        VPresenter.prototype._watchEvent = function (funs, jdom) {
+	        View.prototype._watchEvent = function (funs, jdom) {
 	            var _this = this;
 	            var actions = funs || this;
-	            var view = jdom || this.view;
+	            var viewComponent = jdom || this.viewComponent;
 	            var callAction = function (action, type, target, hit) {
 	                //console.log(type,target,hit);
 	                var arr = action.split("@");
@@ -268,7 +268,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    return true;
 	                }
 	            };
-	            view.on("click", function (e) {
+	            viewComponent.on("click", function (e) {
 	                var type = e.type;
 	                var hit = e.target;
 	                var target = e.target;
@@ -300,14 +300,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return true;
 	            });
 	        };
-	        return VPresenter;
-	    }(tomato.VPresenter));
-	    exports.VPresenter = VPresenter;
+	        return View;
+	    }(tomato.View));
+	    exports.View = View;
 	    var Application = (function (_super) {
 	        __extends(Application, _super);
 	        function Application(rootUri, els, config) {
 	            var _this = _super.call(this, rootUri, els) || this;
-	            _this.view.addClass("tdom-application");
+	            _this.viewComponent.addClass("tdom-application");
 	            return _this;
 	        }
 	        return Application;
@@ -318,12 +318,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	        function Dialog(config, els) {
 	            var _this = this;
 	            if (!els) {
-	                var view = $(tpl_Dialog);
-	                var comps = view.find("[data-dom]").groupBy();
-	                els = { view: view, dialog: $(comps['dialog']), mask: $(comps['mask']), body: $(comps['body']) };
+	                var viewComponent = $(tpl_Dialog);
+	                var comps = viewComponent.find("[data-dom]").groupBy();
+	                els = { viewComponent: viewComponent, dialog: $(comps['dialog']), mask: $(comps['mask']), body: $(comps['body']) };
 	            }
 	            _this = _super.call(this, els, config) || this;
-	            _this.view.addClass("tdom-dialog");
+	            _this.viewComponent.addClass("tdom-dialog");
 	            var that = _this;
 	            _this.mask && _this.mask.on("click", function () {
 	                that.close();
@@ -331,11 +331,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            AnimationEnd && _this.dialog.on(AnimationEnd, function (e) {
 	                if (e.originalEvent['animationName'] == this.getAttribute("data-animation")) {
 	                    this.setAttribute("data-animation", "");
-	                    if (that.view.hasClass("tdom-animation-show")) {
-	                        that.view.removeClass("tdom-animation-show");
+	                    if (that.viewComponent.hasClass("tdom-animation-show")) {
+	                        that.viewComponent.removeClass("tdom-animation-show");
 	                    }
 	                    else {
-	                        that.view.removeClass("tdom-animation-hide");
+	                        that.viewComponent.removeClass("tdom-animation-hide");
 	                        that._setState(tomato.DialogState.Closed, true);
 	                    }
 	                    setTimeout(function () {
@@ -347,7 +347,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return _this;
 	        }
 	        Dialog.prototype._onEffectCompleted = function () {
-	            this.view.trigger("completed");
+	            this.viewComponent.trigger("completed");
 	            if (this._removeAfterClosed) {
 	                this._removeAfterClosed = false;
 	                this.parent && this.parent.removeChild(this);
@@ -368,11 +368,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            else {
 	                if (this.state == tomato.DialogState.Closed) {
 	                    _super.prototype._setState.call(this, state);
-	                    this.view.addClass("tdom-animation-show");
+	                    this.viewComponent.addClass("tdom-animation-show");
 	                    this.dialog.attr("data-animation", "tdom-dialog-show-pt-" + this.config.effect);
 	                }
 	                else if (state == tomato.DialogState.Closed) {
-	                    this.view.addClass("tdom-animation-hide");
+	                    this.viewComponent.addClass("tdom-animation-hide");
 	                    this.dialog.attr("data-animation", "tdom-dialog-hide-pt-" + this.config.effect);
 	                }
 	                else {
@@ -686,7 +686,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    // }
 	    var hideDiv = $("<div style='position:absolute;width:100%;height:100%;left:-100%;top:-100%;overflow: hidden;'></div>").appendTo(document.body);
 	    tomato.setConfig({
-	        createVPView: function (data) {
+	        createViewComponent: function (data) {
 	            if (typeof data == "string") {
 	                return $(data).appendTo(hideDiv);
 	            }

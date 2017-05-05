@@ -27,9 +27,9 @@ declare global{
         removeChild(view: JQuery): void;
         appendChild(view: JQuery): void;
         setZIndex(index: number): void;
-        getVPID():string;
-        setVPID(id:string):void;
-        getVPCON():string;
+        getVID():string;
+        setVID(id:string):void;
+        getVCON():string;
         getSUBS():JQuery[];
     }
 }
@@ -58,26 +58,26 @@ let jdomMethods = {
     setZIndex: function (index: number) {
         this.css('z-index', index + dialogZIndexStart);
     },
-    getVPID: function():string{
-        let str = this.attr("data-vpid");
+    getVID: function():string{
+        let str = this.attr("data-vid");
         if(!str){
-            str = "vp"+(autoID++);
-            this.setVPID(str);
+            str = "v"+(autoID++);
+            this.setVID(str);
         }
         return str;
     },
-    setVPID: function(id:string):void{
-        this.attr("data-vpid",id);
+    setVID: function(id:string):void{
+        this.attr("data-vid",id);
     },
-    getVPCON: function():string{
-        return this.attr("data-vpcon") || "";
+    getVCON: function():string{
+        return this.attr("data-vcon") || "";
     },
     getSUBS: function(){
         let container:HTMLElement = this[0];
-        return (this.find("[data-vpid]").get() as Array<Node>).filter((div)=>{
+        return (this.find("[data-vid]").get() as Array<Node>).filter((div)=>{
             while(div.parentNode!=container){
                 div = div.parentNode as Node;
-                if((div as HTMLElement).getAttribute("data-vpid")){
+                if((div as HTMLElement).getAttribute("data-vid")){
                     return false;
                 }
             }
@@ -179,23 +179,23 @@ export function getWindowSize(): { width: number, height: number } {
 }
 
 
-export class VPresenter extends tomato.VPresenter {
+export class View extends tomato.View {
     protected _$dom: JQuery;
     protected _els:{[key:string]:Element[]} = {};
 
     
-    readonly view: JQuery;
+    readonly viewComponent: JQuery;
     
-    constructor(view: tomato.VPView, parent?: tomato.VPresenter, vpid?:string) {
-        super(view, parent, vpid);
+    constructor(viewComponent: tomato.ViewComponent, parent?: tomato.View, vid?:string) {
+        super(viewComponent, parent, vid);
     }
     find(str: string): JQuery {
-        return (this.view as JQuery).find(str)
+        return this.viewComponent.find(str)
     }
     // setInstallEffect(isBack:boolean){
     //     this.view.attr('data-back', isBack?"true":'');
-    //     if(this.isWholeVPresenter()){
-    //         let mod:tomato.WholeVPresenter = this;
+    //     if(this.isWholeView()){
+    //         let mod:tomato.WholeView = this;
     //         let jdom:JQuery|null = mod.getHeader() as JQuery;
     //         jdom && jdom.attr('data-back', isBack?"true":'');
     //         jdom = mod.getFooter() as JQuery;
@@ -205,7 +205,7 @@ export class VPresenter extends tomato.VPresenter {
     //     }
     // }
     getInstallEffect():boolean {
-        return !!this.view.attr('data-back');
+        return !!this.viewComponent.attr('data-back');
     }
     _evt_open(data:{url:string,target?:string}|string){
         let options:{url:string,target?:string};
@@ -218,7 +218,7 @@ export class VPresenter extends tomato.VPresenter {
         if(options.target == DialogTarget.Self){
             target = this.getDialog();
         }
-        tomato.asyncGetVPresenter<tomato.VPresenter>(options.url).then(function(vp){
+        tomato.asyncGetView<tomato.View>(options.url).then(function(vp){
             open(vp,target)
         });
         return false;
@@ -228,7 +228,7 @@ export class VPresenter extends tomato.VPresenter {
     }
     protected _watchEvent(funs?: { [key: string]: Function }, jdom?: JQuery) {
         let actions: { [key: string]: Function } = funs || (this as any);
-        let view: JQuery = jdom || this.view as JQuery;
+        let viewComponent: JQuery = jdom || this.viewComponent as JQuery;
         let callAction = (action: string, type: string, target: Element, hit: Element) => {
             //console.log(type,target,hit);
             let arr = action.split("@");
@@ -250,7 +250,7 @@ export class VPresenter extends tomato.VPresenter {
             }
         };
 
-        view.on("click", function (e) {
+        viewComponent.on("click", function (e) {
             let type = e.type;
             let hit = e.target;
             let target = e.target;
@@ -286,28 +286,28 @@ export class VPresenter extends tomato.VPresenter {
 
 
 export class Application extends tomato.Application {
-    constructor(rootUri: tomato.Cmd | null, els: { view: JQuery, dialog: JQuery, mask: JQuery, body: JQuery }, config?: tomato.IDialogConfigOptions) {
+    constructor(rootUri: tomato.Cmd | null, els: { viewComponent: JQuery, dialog: JQuery, mask: JQuery, body: JQuery }, config?: tomato.IDialogConfigOptions) {
         super(rootUri,els);
-        this.view.addClass("tdom-application");
+        this.viewComponent.addClass("tdom-application");
     }
 }
 export class Dialog extends tomato.Dialog {
 
-    public readonly view: JQuery;
+    public readonly viewComponent: JQuery;
     public readonly dialog: JQuery;
     public readonly mask: JQuery;
     public readonly body: JQuery;
 
     private _removeAfterClosed: boolean;
 
-    constructor(config?: tomato.IDialogConfigOptions, els?: { view: JQuery, dialog: JQuery, mask: JQuery, body: JQuery }) {
+    constructor(config?: tomato.IDialogConfigOptions, els?: { viewComponent: JQuery, dialog: JQuery, mask: JQuery, body: JQuery }) {
         if (!els) {
-            let view = $(tpl_Dialog);
-            let comps = view.find("[data-dom]").groupBy();
-            els = { view: view, dialog: $(comps['dialog']), mask: $(comps['mask']), body: $(comps['body']) };
+            let viewComponent = $(tpl_Dialog);
+            let comps = viewComponent.find("[data-dom]").groupBy();
+            els = { viewComponent: viewComponent, dialog: $(comps['dialog']), mask: $(comps['mask']), body: $(comps['body']) };
         }
         super(els, config);
-        this.view.addClass("tdom-dialog");
+        this.viewComponent.addClass("tdom-dialog");
         let that = this;
         this.mask && this.mask.on("click", function(){
             that.close();
@@ -315,10 +315,10 @@ export class Dialog extends tomato.Dialog {
         AnimationEnd && this.dialog.on(AnimationEnd, function(e){
             if(e.originalEvent['animationName'] == this.getAttribute("data-animation")){
                 this.setAttribute("data-animation","");
-                if(that.view.hasClass("tdom-animation-show")){
-                    that.view.removeClass("tdom-animation-show")
+                if(that.viewComponent.hasClass("tdom-animation-show")){
+                    that.viewComponent.removeClass("tdom-animation-show")
                 }else{
-                    that.view.removeClass("tdom-animation-hide")
+                    that.viewComponent.removeClass("tdom-animation-hide")
                     that._setState(tomato.DialogState.Closed,true);
                 }
                 setTimeout(function(){
@@ -329,7 +329,7 @@ export class Dialog extends tomato.Dialog {
         });
     }
     protected _onEffectCompleted(){
-        this.view.trigger("completed");
+        this.viewComponent.trigger("completed");
         if(this._removeAfterClosed){
             this._removeAfterClosed = false;
             this.parent && this.parent.removeChild(this);
@@ -348,10 +348,10 @@ export class Dialog extends tomato.Dialog {
         }else{
             if (this.state == tomato.DialogState.Closed) {
                 super._setState(state);
-                this.view.addClass("tdom-animation-show");
+                this.viewComponent.addClass("tdom-animation-show");
                 this.dialog.attr("data-animation","tdom-dialog-show-pt-"+this.config.effect);
             } else if(state == tomato.DialogState.Closed){
-                this.view.addClass("tdom-animation-hide");
+                this.viewComponent.addClass("tdom-animation-hide");
                 this.dialog.attr("data-animation","tdom-dialog-hide-pt-"+this.config.effect);
             }else{
                 super._setState(state);
@@ -778,7 +778,7 @@ export function turnContainer(container: JQuery, effect:string=TurnEffect.slide)
 // }
 let hideDiv = $("<div style='position:absolute;width:100%;height:100%;left:-100%;top:-100%;overflow: hidden;'></div>").appendTo(document.body);
 tomato.setConfig({
-    createVPView: function (data:any) {
+    createViewComponent: function (data:any) {
         if(typeof data == "string"){
             return $(data).appendTo(hideDiv);
         }else if(typeof data.view == "string"){
@@ -802,7 +802,7 @@ export const DialogTarget = {
     "Root" : "_root",
     "Top" : "_top"
 }
-export function open (content:tomato.VPresenter, target?:string|tomato.Dialog, dialogOptions?:tomato.IDialogConfigOptions):tomato.Dialog {
+export function open (content:tomato.View, target?:string|tomato.Dialog, dialogOptions?:tomato.IDialogConfigOptions):tomato.Dialog {
     let dialog:tomato.Dialog = tomato.application;
     if(!target){target=DialogTarget.Blank}
     if(target == DialogTarget.Self || target == DialogTarget.Top){

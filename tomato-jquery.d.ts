@@ -7,9 +7,9 @@ declare global  {
         removeChild(view: JQuery): void;
         appendChild(view: JQuery): void;
         setZIndex(index: number): void;
-        getVPID(): string;
-        setVPID(id: string): void;
-        getVPCON(): string;
+        getVID(): string;
+        setVID(id: string): void;
+        getVCON(): string;
         getSUBS(): JQuery[];
     }
 }
@@ -49,13 +49,13 @@ export declare function getWindowSize(): {
     width: number;
     height: number;
 };
-export declare class VPresenter extends tomato.VPresenter {
+export declare class View extends tomato.View {
     protected _$dom: JQuery;
     protected _els: {
         [key: string]: Element[];
     };
-    readonly view: JQuery;
-    constructor(view: tomato.VPView, parent?: tomato.VPresenter, vpid?: string);
+    readonly viewComponent: JQuery;
+    constructor(viewComponent: tomato.ViewComponent, parent?: tomato.View, vid?: string);
     find(str: string): JQuery;
     getInstallEffect(): boolean;
     _evt_open(data: {
@@ -71,20 +71,20 @@ export declare class VPresenter extends tomato.VPresenter {
 }
 export declare class Application extends tomato.Application {
     constructor(rootUri: tomato.Cmd | null, els: {
-        view: JQuery;
+        viewComponent: JQuery;
         dialog: JQuery;
         mask: JQuery;
         body: JQuery;
     }, config?: tomato.IDialogConfigOptions);
 }
 export declare class Dialog extends tomato.Dialog {
-    readonly view: JQuery;
+    readonly viewComponent: JQuery;
     readonly dialog: JQuery;
     readonly mask: JQuery;
     readonly body: JQuery;
     private _removeAfterClosed;
     constructor(config?: tomato.IDialogConfigOptions, els?: {
-        view: JQuery;
+        viewComponent: JQuery;
         dialog: JQuery;
         mask: JQuery;
         body: JQuery;
@@ -107,4 +107,4 @@ export declare const DialogTarget: {
     "Root": string;
     "Top": string;
 };
-export declare function open(content: tomato.VPresenter, target?: string | tomato.Dialog, dialogOptions?: tomato.IDialogConfigOptions): tomato.Dialog;
+export declare function open(content: tomato.View, target?: string | tomato.Dialog, dialogOptions?: tomato.IDialogConfigOptions): tomato.Dialog;
