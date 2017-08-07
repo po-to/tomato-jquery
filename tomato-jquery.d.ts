@@ -50,32 +50,36 @@ export declare function getWindowSize(): {
     height: number;
 };
 export declare class View extends tomato.View {
-    protected _$dom: JQuery;
-    protected _els: {
-        [key: string]: Element[];
-    };
     readonly viewComponent: JQuery;
-    constructor(viewComponent: tomato.ViewComponent, parent?: tomato.View, vid?: string);
+    readonly config: any;
+    constructor(viewComponent: tomato.IViewComponent, parent?: tomato.View, vid?: string);
     find(str: string): JQuery;
-    getInstallEffect(): boolean;
-    _evt_open(data: {
+    open(data: {
         url: string;
         target?: string;
-    } | string): boolean;
-    protected _getElements(): {
+    } | string, link: {
+        hit: Element;
+        target: Element;
+        type: string;
+    }): boolean;
+    protected _getElements(sub?: string): {
         [x: string]: HTMLElement[];
     };
-    protected _watchEvent(funs?: {
-        [key: string]: Function;
-    }, jdom?: JQuery): void;
+    protected _watchEvent(jdom?: JQuery): void;
 }
 export declare class Application extends tomato.Application {
+    readonly viewComponent: JQuery;
     constructor(rootUri: tomato.Cmd | null, els: {
         viewComponent: JQuery;
         dialog: JQuery;
         mask: JQuery;
         body: JQuery;
     }, config?: tomato.IDialogConfigOptions);
+    protected _getElements(sub?: string): {
+        [x: string]: HTMLElement[];
+    };
+    find(str: string): JQuery;
+    protected _watchEvent(jdom?: JQuery): void;
 }
 export declare class Dialog extends tomato.Dialog {
     readonly viewComponent: JQuery;

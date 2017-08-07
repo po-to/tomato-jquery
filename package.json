@@ -1,36 +1,35 @@
 {
-  "name": "tomato-jquery",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "name": "@po-to/tomato-jquery",
+  "version": "0.1.0",
+  "description": "tomato-jquery是采用jquery作“适配层”来实现和扩展tomato，所以在学习本章之前，请先学习tomato和jquery框架",
+  "homepage": "http://www.po-to.org",
+  "main": "tomato-jquery.js",
+  "types": "tomato-jquery.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "gulp"
   },
+  "author": "po-to <po-to@qq.com>",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/po-to/sample.git"
+    "url": "https://github.com/po-to/tomato-jquery"
   },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/po-to/sample/issues"
-  },
-  "homepage": "https://github.com/po-to/sample#readme",
+  "dependencies": {},
   "devDependencies": {
-    "@po-to/tomato": "^0.1.0",
+    "@po-to/tomato": "^0.0.1",
     "@types/jquery": "^2.0.41",
     "css-loader": "^0.26.2",
     "file-loader": "^0.10.1",
     "gulp": "^3.9.1",
     "gulp-typedoc": "^2.0.2",
-    "gulp-typescript": "^3.1.5",
+    "gulp-typescript": "^3.2.1",
     "html-loader": "^0.4.5",
     "merge2": "^1.0.2",
     "node-sass": "^4.5.2",
     "run-sequence": "^1.2.2",
     "sass-loader": "^6.0.2",
     "style-loader": "^0.13.2",
-    "typedoc": "^0.5.10",
+    "typedoc": "^0.7.2",
     "typescript": "^2.2.1",
     "url-loader": "^0.5.8",
     "webpack-stream": "^3.2.0"

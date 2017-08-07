@@ -1,9 +1,9 @@
- $DialogEffectDuration: 200ms;
+ $DialogEffectDuration: 500ms;
  $DialogEffectTiming: ease-out;
  $DialogMaskOpacity: 0.5;
  $DialogShadow: 0 0 5px rgba(0, 0, 0, .6);
- $TurnEffectDuration: 300ms;
- $TurnEffectTiming:ease-in;
+ $TurnEffectDuration: 500ms;
+ $TurnEffectTiming:ease-out;
 
 
 @keyframes tdom-turnContainer-tdom-slide- {
@@ -46,7 +46,7 @@
         }
         &.tdom-animation{
             > *{
-                animation: tdom-turnContainer-tdom-slide- 1000ms ease-out forwards
+                animation: tdom-turnContainer-tdom-slide- $TurnEffectDuration $TurnEffectTiming forwards
             }
         }
         &.tdom-back{
@@ -55,7 +55,7 @@
             }
             &.tdom-animation{
                 > *{
-                    animation: tdom-turnContainer-tdom-slide-tdom-back 1000ms ease-out forwards
+                    animation: tdom-turnContainer-tdom-slide-tdom-back $TurnEffectDuration $TurnEffectTiming forwards
                 }
             }
         }
@@ -66,13 +66,13 @@
         }
         &.tdom-animation{
             > *:last-child{
-                animation: tdom-turnContainer-tdom-cover- 1000ms ease-out forwards
+                animation: tdom-turnContainer-tdom-cover- $TurnEffectDuration $TurnEffectTiming forwards
             }
         }
         &.tdom-back{
             &.tdom-animation{
                 > *:last-child{
-                    animation: tdom-turnContainer-tdom-cover-tdom-back 1000ms ease-out forwards
+                    animation: tdom-turnContainer-tdom-cover-tdom-back $TurnEffectDuration $TurnEffectTiming forwards
                 }
             }
         }
@@ -180,7 +180,7 @@
             overflow: hidden;
         }
         > .pt-mask {
-            animation: tdom-dialog-show-mask 1000ms ease-out forwards
+            animation: tdom-dialog-show-mask $DialogEffectDuration $DialogEffectTiming forwards
         }
     }
     &.tdom-animation-hide{
@@ -189,30 +189,30 @@
             overflow: hidden;
         }
         > .pt-mask {
-            animation: tdom-dialog-hide-mask 1000ms ease-out forwards
+            animation: tdom-dialog-hide-mask $DialogEffectDuration $DialogEffectTiming forwards
         }
     }
     &.pt-scale{
         &.tdom-animation-show{
             > .pt-dialog > *:first-child{
-                animation: tdom-dialog-show-pt-scale 1000ms ease-out forwards
+                animation: tdom-dialog-show-pt-scale $DialogEffectDuration $DialogEffectTiming forwards
             }
         }
         &.tdom-animation-hide{
             > .pt-dialog  > *:first-child{
-                animation: tdom-dialog-hide-pt-scale 1000ms ease-out forwards
+                animation: tdom-dialog-hide-pt-scale $DialogEffectDuration $DialogEffectTiming forwards
             }
         }
     }
     &.pt-slideLeft{
         &.tdom-animation-show{
             > .pt-dialog > *:first-child{
-                animation: tdom-dialog-show-pt-slideLeft 1000ms ease-out forwards
+                animation: tdom-dialog-show-pt-slideLeft $DialogEffectDuration $DialogEffectTiming forwards
             }
         }
         &.tdom-animation-hide{
             > .pt-dialog  > *:first-child{
-                animation: tdom-dialog-hide-pt-slideLeft 1000ms ease-out forwards
+                animation: tdom-dialog-hide-pt-slideLeft $DialogEffectDuration $DialogEffectTiming forwards
             }
         }
     }

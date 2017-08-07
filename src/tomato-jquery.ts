@@ -1,4 +1,4 @@
-import * as tomato from "@po-to/tomato";
+import * as tomato from "@po-to@tomato";
 import css = require("./css");
 import tpl_Dialog = require('./tpl.Dialog');
 
@@ -102,7 +102,7 @@ export const TurnEffect = {
     cover: "tdom-cover",
 }
 
-declare module "@po-to/tomato"{
+declare module "@po-to@tomato"{
     interface IDialogEffect{
         swipeUp: string;
         swipeDown: string;
@@ -178,37 +178,66 @@ export function getWindowSize(): { width: number, height: number } {
     //return {width:document.documentElement.clientWidth,height:zoomLevel?Math.round(window.innerHeight * zoomLevel):document.documentElement.clientHeight};
 }
 
-
+function _watchEvent(view:tomato.View, jdom?: JQuery){
+    jdom || (view.viewComponent as JQuery).on("click",  function(e) {
+        let type = e.type;
+        let hit = e.target;
+        let target = e.target;
+        let nodeName = target.nodeName;
+        let propagation = true;
+        let root: Element = this;
+        if (type == "focusin" && nodeName != "INPUT" && nodeName != "TEXTARE") {
+            return true;
+        }
+        if (type == "click" && (nodeName == "FORM" || nodeName == "SELECT" || nodeName == "OPTION" || nodeName == "TEXTARE" || nodeName == "INPUT" || (nodeName == "LABEL" && (target as any).htmlFor))) {
+            return true;
+        }
+        if (type == "change" && (nodeName == "FORM" || nodeName == "TEXTARE" || nodeName == "INPUT")) {
+            return true;
+        }
+        while (target && target != root) {
+            let events = target.getAttribute("evt");
+            if (events && (!target.hasAttribute("disabled") || target.getAttribute("disabled") == 'false')) {
+                events.split("|").forEach(function (evt) {
+                    let arr = evt.split("@");
+                    let evtName = arr[0];
+                    let data = arr[1];
+                    if (data) {
+                        let s = data.substr(0, 1);
+                        let e = data.substr(data.length - 1, 1);
+                        if ((s == "{" && e == "}") || (s == "[" && e == "]")) {
+                            data = JSON.parse(data);
+                        }
+                    }
+                    propagation = view['_triggerEvent'](evtName, data, {target:target, hit:hit, type:type}) && propagation;
+                });
+                return propagation;
+            }
+            if (target.nodeName == "FORM") {
+                return true;
+            }
+            target = target.parentNode as Element;
+        }
+        return true;
+    });
+}
 export class View extends tomato.View {
-    protected _$dom: JQuery;
-    protected _els:{[key:string]:Element[]} = {};
-
-    
     readonly viewComponent: JQuery;
+    readonly config:any;
     
-    constructor(viewComponent: tomato.ViewComponent, parent?: tomato.View, vid?:string) {
+    constructor(viewComponent: tomato.IViewComponent, parent?: tomato.View, vid?:string) {
         super(viewComponent, parent, vid);
+        let json = this.viewComponent.children("script[type='text/config']").text();
+        this.config = json?JSON.parse(json):null;
     }
     find(str: string): JQuery {
         return this.viewComponent.find(str)
     }
-    // setInstallEffect(isBack:boolean){
-    //     this.view.attr('data-back', isBack?"true":'');
-    //     if(this.isWholeView()){
-    //         let mod:tomato.WholeView = this;
-    //         let jdom:JQuery|null = mod.getHeader() as JQuery;
-    //         jdom && jdom.attr('data-back', isBack?"true":'');
-    //         jdom = mod.getFooter() as JQuery;
-    //         jdom && jdom.attr('data-back', isBack?"true":'');
-    //         jdom = mod.getAside() as JQuery;
-    //         jdom && jdom.attr('data-back', isBack?"true":'');
-    //     }
-    // }
-    getInstallEffect():boolean {
-        return !!this.viewComponent.attr('data-back');
-    }
-    _evt_open(data:{url:string,target?:string}|string){
+    open(data:{url:string,target?:string}|string, link:{hit:Element,target:Element,type:string}){
         let options:{url:string,target?:string};
+        if(!data){
+            data = {url:link.target.getAttribute("href")||"",target:link.target.getAttribute("target")||""}
+        }
         if(typeof data=="string"){
             options = {url:data}
         }else{
@@ -223,72 +252,29 @@ export class View extends tomato.View {
         });
         return false;
     }
-    protected _getElements(): { [x: string]: HTMLElement[] } {
-        return this.find("[dom]").groupBy("dom");
+    protected _getElements(sub:string=''): { [x: string]: HTMLElement[] } {
+        return this.find(sub?sub+" [dom]":"[dom]").groupBy("dom");
     }
-    protected _watchEvent(funs?: { [key: string]: Function }, jdom?: JQuery) {
-        let actions: { [key: string]: Function } = funs || (this as any);
-        let viewComponent: JQuery = jdom || this.viewComponent as JQuery;
-        let callAction = (action: string, type: string, target: Element, hit: Element) => {
-            //console.log(type,target,hit);
-            let arr = action.split("@");
-            action = arr[0];
-            let data = arr[1];
-            let fun: Function | undefined = actions["_evt_" + action];
-            if (fun) {
-                if (data) {
-                    let s = data.substr(0, 1);
-                    let e = data.substr(data.length - 1, 1);
-                    if ((s == "{" && e == "}") || (s == "[" && e == "]")) {
-                        data = JSON.parse(data);
-                    }
-                }
-                //project.addActive(target);
-                return fun.call(this, data, target, hit);
-            } else {
-                return true;
-            }
-        };
-
-        viewComponent.on("click", function (e) {
-            let type = e.type;
-            let hit = e.target;
-            let target = e.target;
-            let nodeName = target.nodeName;
-            let propagation = true;
-            let root: Element = this;
-            if (type == "focusin" && nodeName != "INPUT" && nodeName != "TEXTARE") {
-                return true;
-            }
-            if (type == "click" && (nodeName == "FORM" || nodeName == "SELECT" || nodeName == "OPTION" || nodeName == "TEXTARE" || nodeName == "INPUT" || (nodeName == "LABEL" && (target as any).htmlFor))) {
-                return true;
-            }
-            if (type == "change" && (nodeName == "FORM" || nodeName == "TEXTARE" || nodeName == "INPUT")) {
-                return true;
-            }
-            while (target && target != root) {
-                let actions = target.getAttribute("evt");
-                if (actions && (!target.hasAttribute("disabled") || target.getAttribute("disabled") == 'false')) {
-                    actions.split("|").forEach(function (action) {
-                        propagation = (callAction(action, type, target, hit)? true : false) && propagation;
-                    });
-                    return propagation;
-                }
-                if (target.nodeName == "FORM") {
-                    return true;
-                }
-                target = target.parentNode as Element;
-            }
-            return true;
-        });
+    protected _watchEvent(jdom?: JQuery) {
+        _watchEvent(this,jdom);
     }
 }
 
 
 export class Application extends tomato.Application {
+    readonly viewComponent: JQuery;
     constructor(rootUri: tomato.Cmd | null, els: { viewComponent: JQuery, dialog: JQuery, mask: JQuery, body: JQuery }, config?: tomato.IDialogConfigOptions) {
         super(rootUri,els);
         this.viewComponent.addClass("tdom-application");
+    }
+    protected _getElements(sub:string=''): { [x: string]: HTMLElement[] } {
+        return this.find(sub?sub+" [dom]":"[dom]").groupBy("dom");
+    }
+    find(str: string): JQuery {
+        return this.viewComponent.find(str)
+    }
+    protected _watchEvent(jdom?: JQuery) {
+        _watchEvent(this,jdom);
     }
 }
 export class Dialog extends tomato.Dialog {
@@ -706,7 +692,7 @@ export function turnContainer(container: JQuery, effect:string=TurnEffect.slide)
         let pos = (view.attr("data-pos") || "0,0").split(",");
         div.scrollLeft = parseInt(pos[0]);
         div.scrollTop = parseInt(pos[1]);
-        let direction = this.attr("data-back") ? "tdom-back" : "";
+        let direction = view.attr("data-back") ? "tdom-back" : "";
 	    this.removeClass("tdom-back").addClass(direction + " tdom-animation");
         this.attr("data-animation","tdom-turnContainer-"+effect+"-"+direction);
         if(!AnimationEnd){
@@ -781,8 +767,6 @@ tomato.setConfig({
     createViewComponent: function (data:any) {
         if(typeof data == "string"){
             return $(data).appendTo(hideDiv);
-        }else if(typeof data.view == "string"){
-            return $(data.view).appendTo(hideDiv);
         }else{
             return data;
         }

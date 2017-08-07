@@ -142,33 +142,65 @@ define(["require", "exports", "@po-to/tomato", "./css", "./tpl.Dialog"], functio
         //return {width:document.documentElement.clientWidth,height:zoomLevel?Math.round(window.innerHeight * zoomLevel):document.documentElement.clientHeight};
     }
     exports.getWindowSize = getWindowSize;
+    function _watchEvent(view, jdom) {
+        jdom || view.viewComponent.on("click", function (e) {
+            var type = e.type;
+            var hit = e.target;
+            var target = e.target;
+            var nodeName = target.nodeName;
+            var propagation = true;
+            var root = this;
+            if (type == "focusin" && nodeName != "INPUT" && nodeName != "TEXTARE") {
+                return true;
+            }
+            if (type == "click" && (nodeName == "FORM" || nodeName == "SELECT" || nodeName == "OPTION" || nodeName == "TEXTARE" || nodeName == "INPUT" || (nodeName == "LABEL" && target.htmlFor))) {
+                return true;
+            }
+            if (type == "change" && (nodeName == "FORM" || nodeName == "TEXTARE" || nodeName == "INPUT")) {
+                return true;
+            }
+            while (target && target != root) {
+                var events = target.getAttribute("evt");
+                if (events && (!target.hasAttribute("disabled") || target.getAttribute("disabled") == 'false')) {
+                    events.split("|").forEach(function (evt) {
+                        var arr = evt.split("@");
+                        var evtName = arr[0];
+                        var data = arr[1];
+                        if (data) {
+                            var s = data.substr(0, 1);
+                            var e_1 = data.substr(data.length - 1, 1);
+                            if ((s == "{" && e_1 == "}") || (s == "[" && e_1 == "]")) {
+                                data = JSON.parse(data);
+                            }
+                        }
+                        propagation = view['_triggerEvent'](evtName, data, { target: target, hit: hit, type: type }) && propagation;
+                    });
+                    return propagation;
+                }
+                if (target.nodeName == "FORM") {
+                    return true;
+                }
+                target = target.parentNode;
+            }
+            return true;
+        });
+    }
     var View = (function (_super) {
         __extends(View, _super);
         function View(viewComponent, parent, vid) {
             var _this = _super.call(this, viewComponent, parent, vid) || this;
-            _this._els = {};
+            var json = _this.viewComponent.children("script[type='text/config']").text();
+            _this.config = json ? JSON.parse(json) : null;
             return _this;
         }
         View.prototype.find = function (str) {
             return this.viewComponent.find(str);
         };
-        // setInstallEffect(isBack:boolean){
-        //     this.view.attr('data-back', isBack?"true":'');
-        //     if(this.isWholeView()){
-        //         let mod:tomato.WholeView = this;
-        //         let jdom:JQuery|null = mod.getHeader() as JQuery;
-        //         jdom && jdom.attr('data-back', isBack?"true":'');
-        //         jdom = mod.getFooter() as JQuery;
-        //         jdom && jdom.attr('data-back', isBack?"true":'');
-        //         jdom = mod.getAside() as JQuery;
-        //         jdom && jdom.attr('data-back', isBack?"true":'');
-        //     }
-        // }
-        View.prototype.getInstallEffect = function () {
-            return !!this.viewComponent.attr('data-back');
-        };
-        View.prototype._evt_open = function (data) {
+        View.prototype.open = function (data, link) {
             var options;
+            if (!data) {
+                data = { url: link.target.getAttribute("href") || "", target: link.target.getAttribute("target") || "" };
+            }
             if (typeof data == "string") {
                 options = { url: data };
             }
@@ -184,65 +216,12 @@ define(["require", "exports", "@po-to/tomato", "./css", "./tpl.Dialog"], functio
             });
             return false;
         };
-        View.prototype._getElements = function () {
-            return this.find("[dom]").groupBy("dom");
+        View.prototype._getElements = function (sub) {
+            if (sub === void 0) { sub = ''; }
+            return this.find(sub ? sub + " [dom]" : "[dom]").groupBy("dom");
         };
-        View.prototype._watchEvent = function (funs, jdom) {
-            var _this = this;
-            var actions = funs || this;
-            var viewComponent = jdom || this.viewComponent;
-            var callAction = function (action, type, target, hit) {
-                //console.log(type,target,hit);
-                var arr = action.split("@");
-                action = arr[0];
-                var data = arr[1];
-                var fun = actions["_evt_" + action];
-                if (fun) {
-                    if (data) {
-                        var s = data.substr(0, 1);
-                        var e = data.substr(data.length - 1, 1);
-                        if ((s == "{" && e == "}") || (s == "[" && e == "]")) {
-                            data = JSON.parse(data);
-                        }
-                    }
-                    //project.addActive(target);
-                    return fun.call(_this, data, target, hit);
-                }
-                else {
-                    return true;
-                }
-            };
-            viewComponent.on("click", function (e) {
-                var type = e.type;
-                var hit = e.target;
-                var target = e.target;
-                var nodeName = target.nodeName;
-                var propagation = true;
-                var root = this;
-                if (type == "focusin" && nodeName != "INPUT" && nodeName != "TEXTARE") {
-                    return true;
-                }
-                if (type == "click" && (nodeName == "FORM" || nodeName == "SELECT" || nodeName == "OPTION" || nodeName == "TEXTARE" || nodeName == "INPUT" || (nodeName == "LABEL" && target.htmlFor))) {
-                    return true;
-                }
-                if (type == "change" && (nodeName == "FORM" || nodeName == "TEXTARE" || nodeName == "INPUT")) {
-                    return true;
-                }
-                while (target && target != root) {
-                    var actions_1 = target.getAttribute("evt");
-                    if (actions_1 && (!target.hasAttribute("disabled") || target.getAttribute("disabled") == 'false')) {
-                        actions_1.split("|").forEach(function (action) {
-                            propagation = (callAction(action, type, target, hit) ? true : false) && propagation;
-                        });
-                        return propagation;
-                    }
-                    if (target.nodeName == "FORM") {
-                        return true;
-                    }
-                    target = target.parentNode;
-                }
-                return true;
-            });
+        View.prototype._watchEvent = function (jdom) {
+            _watchEvent(this, jdom);
         };
         return View;
     }(tomato.View));
@@ -254,6 +233,16 @@ define(["require", "exports", "@po-to/tomato", "./css", "./tpl.Dialog"], functio
             _this.viewComponent.addClass("tdom-application");
             return _this;
         }
+        Application.prototype._getElements = function (sub) {
+            if (sub === void 0) { sub = ''; }
+            return this.find(sub ? sub + " [dom]" : "[dom]").groupBy("dom");
+        };
+        Application.prototype.find = function (str) {
+            return this.viewComponent.find(str);
+        };
+        Application.prototype._watchEvent = function (jdom) {
+            _watchEvent(this, jdom);
+        };
         return Application;
     }(tomato.Application));
     exports.Application = Application;
@@ -557,7 +546,7 @@ define(["require", "exports", "@po-to/tomato", "./css", "./tpl.Dialog"], functio
             var pos = (view.attr("data-pos") || "0,0").split(",");
             div.scrollLeft = parseInt(pos[0]);
             div.scrollTop = parseInt(pos[1]);
-            var direction = this.attr("data-back") ? "tdom-back" : "";
+            var direction = view.attr("data-back") ? "tdom-back" : "";
             this.removeClass("tdom-back").addClass(direction + " tdom-animation");
             this.attr("data-animation", "tdom-turnContainer-" + effect + "-" + direction);
             if (!AnimationEnd) {
@@ -633,9 +622,6 @@ define(["require", "exports", "@po-to/tomato", "./css", "./tpl.Dialog"], functio
         createViewComponent: function (data) {
             if (typeof data == "string") {
                 return $(data).appendTo(hideDiv);
-            }
-            else if (typeof data.view == "string") {
-                return $(data.view).appendTo(hideDiv);
             }
             else {
                 return data;

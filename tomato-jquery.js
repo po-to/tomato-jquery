@@ -52,7 +52,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;var __extends = (this && this.__extends) || (function () {
 	    var extendStatics = Object.setPrototypeOf ||
@@ -198,33 +198,65 @@ return /******/ (function(modules) { // webpackBootstrap
 	        //return {width:document.documentElement.clientWidth,height:zoomLevel?Math.round(window.innerHeight * zoomLevel):document.documentElement.clientHeight};
 	    }
 	    exports.getWindowSize = getWindowSize;
+	    function _watchEvent(view, jdom) {
+	        jdom || view.viewComponent.on("click", function (e) {
+	            var type = e.type;
+	            var hit = e.target;
+	            var target = e.target;
+	            var nodeName = target.nodeName;
+	            var propagation = true;
+	            var root = this;
+	            if (type == "focusin" && nodeName != "INPUT" && nodeName != "TEXTARE") {
+	                return true;
+	            }
+	            if (type == "click" && (nodeName == "FORM" || nodeName == "SELECT" || nodeName == "OPTION" || nodeName == "TEXTARE" || nodeName == "INPUT" || (nodeName == "LABEL" && target.htmlFor))) {
+	                return true;
+	            }
+	            if (type == "change" && (nodeName == "FORM" || nodeName == "TEXTARE" || nodeName == "INPUT")) {
+	                return true;
+	            }
+	            while (target && target != root) {
+	                var events = target.getAttribute("evt");
+	                if (events && (!target.hasAttribute("disabled") || target.getAttribute("disabled") == 'false')) {
+	                    events.split("|").forEach(function (evt) {
+	                        var arr = evt.split("@");
+	                        var evtName = arr[0];
+	                        var data = arr[1];
+	                        if (data) {
+	                            var s = data.substr(0, 1);
+	                            var e_1 = data.substr(data.length - 1, 1);
+	                            if ((s == "{" && e_1 == "}") || (s == "[" && e_1 == "]")) {
+	                                data = JSON.parse(data);
+	                            }
+	                        }
+	                        propagation = view['_triggerEvent'](evtName, data, { target: target, hit: hit, type: type }) && propagation;
+	                    });
+	                    return propagation;
+	                }
+	                if (target.nodeName == "FORM") {
+	                    return true;
+	                }
+	                target = target.parentNode;
+	            }
+	            return true;
+	        });
+	    }
 	    var View = (function (_super) {
 	        __extends(View, _super);
 	        function View(viewComponent, parent, vid) {
 	            var _this = _super.call(this, viewComponent, parent, vid) || this;
-	            _this._els = {};
+	            var json = _this.viewComponent.children("script[type='text/config']").text();
+	            _this.config = json ? JSON.parse(json) : null;
 	            return _this;
 	        }
 	        View.prototype.find = function (str) {
 	            return this.viewComponent.find(str);
 	        };
-	        // setInstallEffect(isBack:boolean){
-	        //     this.view.attr('data-back', isBack?"true":'');
-	        //     if(this.isWholeView()){
-	        //         let mod:tomato.WholeView = this;
-	        //         let jdom:JQuery|null = mod.getHeader() as JQuery;
-	        //         jdom && jdom.attr('data-back', isBack?"true":'');
-	        //         jdom = mod.getFooter() as JQuery;
-	        //         jdom && jdom.attr('data-back', isBack?"true":'');
-	        //         jdom = mod.getAside() as JQuery;
-	        //         jdom && jdom.attr('data-back', isBack?"true":'');
-	        //     }
-	        // }
-	        View.prototype.getInstallEffect = function () {
-	            return !!this.viewComponent.attr('data-back');
-	        };
-	        View.prototype._evt_open = function (data) {
+	        View.prototype.open = function (data, link) {
 	            var options;
+	            if (!data) {
+	                data = { url: link.target.getAttribute("href") || "", target: link.target.getAttribute("target") || "" };
+	            }
 	            if (typeof data == "string") {
 	                options = { url: data };
 	            }
@@ -240,65 +272,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	            });
 	            return false;
 	        };
-	        View.prototype._getElements = function () {
-	            return this.find("[dom]").groupBy("dom");
+	        View.prototype._getElements = function (sub) {
+	            if (sub === void 0) { sub = ''; }
+	            return this.find(sub ? sub + " [dom]" : "[dom]").groupBy("dom");
 	        };
-	        View.prototype._watchEvent = function (funs, jdom) {
-	            var _this = this;
-	            var actions = funs || this;
-	            var viewComponent = jdom || this.viewComponent;
-	            var callAction = function (action, type, target, hit) {
-	                //console.log(type,target,hit);
-	                var arr = action.split("@");
-	                action = arr[0];
-	                var data = arr[1];
-	                var fun = actions["_evt_" + action];
-	                if (fun) {
-	                    if (data) {
-	                        var s = data.substr(0, 1);
-	                        var e = data.substr(data.length - 1, 1);
-	                        if ((s == "{" && e == "}") || (s == "[" && e == "]")) {
-	                            data = JSON.parse(data);
-	                        }
-	                    }
-	                    //project.addActive(target);
-	                    return fun.call(_this, data, target, hit);
-	                }
-	                else {
-	                    return true;
-	                }
-	            };
-	            viewComponent.on("click", function (e) {
-	                var type = e.type;
-	                var hit = e.target;
-	                var target = e.target;
-	                var nodeName = target.nodeName;
-	                var propagation = true;
-	                var root = this;
-	                if (type == "focusin" && nodeName != "INPUT" && nodeName != "TEXTARE") {
-	                    return true;
-	                }
-	                if (type == "click" && (nodeName == "FORM" || nodeName == "SELECT" || nodeName == "OPTION" || nodeName == "TEXTARE" || nodeName == "INPUT" || (nodeName == "LABEL" && target.htmlFor))) {
-	                    return true;
-	                }
-	                if (type == "change" && (nodeName == "FORM" || nodeName == "TEXTARE" || nodeName == "INPUT")) {
-	                    return true;
-	                }
-	                while (target && target != root) {
-	                    var actions_1 = target.getAttribute("evt");
-	                    if (actions_1 && (!target.hasAttribute("disabled") || target.getAttribute("disabled") == 'false')) {
-	                        actions_1.split("|").forEach(function (action) {
-	                            propagation = (callAction(action, type, target, hit) ? true : false) && propagation;
-	                        });
-	                        return propagation;
-	                    }
-	                    if (target.nodeName == "FORM") {
-	                        return true;
-	                    }
-	                    target = target.parentNode;
-	                }
-	                return true;
-	            });
+	        View.prototype._watchEvent = function (jdom) {
+	            _watchEvent(this, jdom);
 	        };
 	        return View;
 	    }(tomato.View));
@@ -310,6 +289,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	            _this.viewComponent.addClass("tdom-application");
 	            return _this;
 	        }
+	        Application.prototype._getElements = function (sub) {
+	            if (sub === void 0) { sub = ''; }
+	            return this.find(sub ? sub + " [dom]" : "[dom]").groupBy("dom");
+	        };
+	        Application.prototype.find = function (str) {
+	            return this.viewComponent.find(str);
+	        };
+	        Application.prototype._watchEvent = function (jdom) {
+	            _watchEvent(this, jdom);
+	        };
 	        return Application;
 	    }(tomato.Application));
 	    exports.Application = Application;
@@ -613,7 +602,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var pos = (view.attr("data-pos") || "0,0").split(",");
 	            div.scrollLeft = parseInt(pos[0]);
 	            div.scrollTop = parseInt(pos[1]);
-	            var direction = this.attr("data-back") ? "tdom-back" : "";
+	            var direction = view.attr("data-back") ? "tdom-back" : "";
 	            this.removeClass("tdom-back").addClass(direction + " tdom-animation");
 	            this.attr("data-animation", "tdom-turnContainer-" + effect + "-" + direction);
 	            if (!AnimationEnd) {
@@ -690,9 +679,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (typeof data == "string") {
 	                return $(data).appendTo(hideDiv);
 	            }
-	            else if (typeof data.view == "string") {
-	                return $(data.view).appendTo(hideDiv);
-	            }
 	            else {
 	                return data;
 	            }
@@ -736,15 +722,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 
 
-/***/ },
+/***/ }),
 /* 1 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	module.exports = __WEBPACK_EXTERNAL_MODULE_1__;
 
-/***/ },
+/***/ }),
 /* 2 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	// style-loader: Adds some css to the DOM by adding a <style> tag
 
@@ -758,8 +744,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	if(false) {
 		// When the styles change, update the <style> tags
 		if(!content.locals) {
-			module.hot.accept("!!../node_modules/.0.26.4@css-loader/index.js!../node_modules/.6.0.3@sass-loader/lib/loader.js!./css.scss", function() {
-				var newContent = require("!!../node_modules/.0.26.4@css-loader/index.js!../node_modules/.6.0.3@sass-loader/lib/loader.js!./css.scss");
+			module.hot.accept("!!../node_modules/_css-loader@0.26.4@css-loader/index.js!../node_modules/_sass-loader@6.0.5@sass-loader/lib/loader.js!./css.scss", function() {
+				var newContent = require("!!../node_modules/_css-loader@0.26.4@css-loader/index.js!../node_modules/_sass-loader@6.0.5@sass-loader/lib/loader.js!./css.scss");
 				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 				update(newContent);
 			});
@@ -768,23 +754,23 @@ return /******/ (function(modules) { // webpackBootstrap
 		module.hot.dispose(function() { update(); });
 	}
 
-/***/ },
+/***/ }),
 /* 3 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	exports = module.exports = __webpack_require__(4)();
 	// imports
 
 
 	// module
-	exports.push([module.id, "@keyframes tdom-turnContainer-tdom-slide- {\n  from {\n    transform: translateX(100%); }\n  to {\n    transform: none; } }\n\n@keyframes tdom-turnContainer-tdom-slide-tdom-back {\n  from {\n    transform: translateX(-100%); }\n  to {\n    transform: none; } }\n\n@keyframes tdom-turnContainer-tdom-cover- {\n  from {\n    transform: translateX(100%); }\n  to {\n    transform: none; } }\n\n@keyframes tdom-turnContainer-tdom-cover-tdom-back {\n  from {\n    transform: translateX(-100%); }\n  to {\n    transform: none; } }\n\n.tdom-turnContainer {\n  position: relative;\n  overflow-x: hidden;\n  overflow-y: auto; }\n  .tdom-turnContainer > *:first-child {\n    position: absolute;\n    width: 100%;\n    height: 100%;\n    top: 0;\n    display: none; }\n  .tdom-turnContainer.tdom-animation > *:first-child {\n    display: block; }\n  .tdom-turnContainer.tdom-slide > *:first-child {\n    left: -100%; }\n  .tdom-turnContainer.tdom-slide.tdom-animation > * {\n    animation: tdom-turnContainer-tdom-slide- 1000ms ease-out forwards; }\n  .tdom-turnContainer.tdom-slide.tdom-back > *:first-child {\n    left: 100%; }\n  .tdom-turnContainer.tdom-slide.tdom-back.tdom-animation > * {\n    animation: tdom-turnContainer-tdom-slide-tdom-back 1000ms ease-out forwards; }\n  .tdom-turnContainer.tdom-cover > *:first-child {\n    left: 0; }\n  .tdom-turnContainer.tdom-cover.tdom-animation > *:last-child {\n    animation: tdom-turnContainer-tdom-cover- 1000ms ease-out forwards; }\n  .tdom-turnContainer.tdom-cover.tdom-back.tdom-animation > *:last-child {\n    animation: tdom-turnContainer-tdom-cover-tdom-back 1000ms ease-out forwards; }\n\n@keyframes tdom-dialog-show-mask {\n  from {\n    opacity: 0; }\n  to {\n    opacity: 1; } }\n\n@keyframes tdom-dialog-hide-mask {\n  from {\n    opacity: 1; }\n  to {\n    opacity: 0; } }\n\n@keyframes tdom-dialog-show-pt-scale {\n  from {\n    opacity: 0;\n    transform: scale(0.5, 0.5); }\n  to {\n    opacity: 1;\n    transform: none; } }\n\n@keyframes tdom-dialog-hide-pt-scale {\n  from {\n    opacity: 1;\n    transform: none; }\n  to {\n    opacity: 0;\n    transform: scale(0.5, 0.5); } }\n\n@keyframes tdom-dialog-show-pt-slideLeft {\n  from {\n    transform: translateX(100%); }\n  to {\n    transform: none; } }\n\n@keyframes tdom-dialog-hide-pt-slideLeft {\n  from {\n    transform: none; }\n  to {\n    transform: translateX(100%); } }\n\n.pt-mask {\n  position: fixed;\n  width: 100%;\n  height: 100%;\n  left: 0;\n  top: 0;\n  background: rgba(0, 0, 0, 0.5);\n  text-align: center;\n  display: none; }\n\n.pt-mask {\n  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#7f000000,endColorstr=#7f000000); }\n\n.pt-mask:before {\n  font-size: 0;\n  content: \".\";\n  display: block;\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  left: 0;\n  top: 0; }\n\n:root .pt-mask {\n  filter: none; }\n\n:root .pt-mask:before {\n  content: none; }\n\n.pt-application > .pt-mask.pt-busy {\n  display: block; }\n\n.tdom-dialog {\n  position: relative; }\n  .tdom-dialog > .pt-dialog {\n    position: fixed;\n    background: transparent;\n    box-shadow: 5px 5px 5px #000; }\n    .tdom-dialog > .pt-dialog > *:first-child {\n      height: 100%;\n      width: 100%; }\n    .tdom-dialog > .pt-dialog.tdom-wrapWidth > *:first-child {\n      width: auto; }\n    .tdom-dialog > .pt-dialog.tdom-wrapHeight > *:first-child {\n      height: auto; }\n  .tdom-dialog.pt-masked > .pt-mask {\n    display: block; }\n  .tdom-dialog.pt-Closed {\n    display: none; }\n  .tdom-dialog .pt-body {\n    overflow-x: hidden;\n    overflow-y: auto; }\n\n.tdom-dialog.tdom-animation-show > .pt-dialog {\n  box-shadow: none;\n  overflow: hidden; }\n\n.tdom-dialog.tdom-animation-show > .pt-mask {\n  animation: tdom-dialog-show-mask 1000ms ease-out forwards; }\n\n.tdom-dialog.tdom-animation-hide > .pt-dialog {\n  box-shadow: none;\n  overflow: hidden; }\n\n.tdom-dialog.tdom-animation-hide > .pt-mask {\n  animation: tdom-dialog-hide-mask 1000ms ease-out forwards; }\n\n.tdom-dialog.pt-scale.tdom-animation-show > .pt-dialog > *:first-child {\n  animation: tdom-dialog-show-pt-scale 1000ms ease-out forwards; }\n\n.tdom-dialog.pt-scale.tdom-animation-hide > .pt-dialog > *:first-child {\n  animation: tdom-dialog-hide-pt-scale 1000ms ease-out forwards; }\n\n.tdom-dialog.pt-slideLeft.tdom-animation-show > .pt-dialog > *:first-child {\n  animation: tdom-dialog-show-pt-slideLeft 1000ms ease-out forwards; }\n\n.tdom-dialog.pt-slideLeft.tdom-animation-hide > .pt-dialog > *:first-child {\n  animation: tdom-dialog-hide-pt-slideLeft 1000ms ease-out forwards; }\n", ""]);
+	exports.push([module.id, "@keyframes tdom-turnContainer-tdom-slide- {\n  from {\n    transform: translateX(100%); }\n  to {\n    transform: none; } }\n\n@keyframes tdom-turnContainer-tdom-slide-tdom-back {\n  from {\n    transform: translateX(-100%); }\n  to {\n    transform: none; } }\n\n@keyframes tdom-turnContainer-tdom-cover- {\n  from {\n    transform: translateX(100%); }\n  to {\n    transform: none; } }\n\n@keyframes tdom-turnContainer-tdom-cover-tdom-back {\n  from {\n    transform: translateX(-100%); }\n  to {\n    transform: none; } }\n\n.tdom-turnContainer {\n  position: relative;\n  overflow-x: hidden;\n  overflow-y: auto; }\n  .tdom-turnContainer > *:first-child {\n    position: absolute;\n    width: 100%;\n    height: 100%;\n    top: 0;\n    display: none; }\n  .tdom-turnContainer.tdom-animation > *:first-child {\n    display: block; }\n  .tdom-turnContainer.tdom-slide > *:first-child {\n    left: -100%; }\n  .tdom-turnContainer.tdom-slide.tdom-animation > * {\n    animation: tdom-turnContainer-tdom-slide- 500ms ease-out forwards; }\n  .tdom-turnContainer.tdom-slide.tdom-back > *:first-child {\n    left: 100%; }\n  .tdom-turnContainer.tdom-slide.tdom-back.tdom-animation > * {\n    animation: tdom-turnContainer-tdom-slide-tdom-back 500ms ease-out forwards; }\n  .tdom-turnContainer.tdom-cover > *:first-child {\n    left: 0; }\n  .tdom-turnContainer.tdom-cover.tdom-animation > *:last-child {\n    animation: tdom-turnContainer-tdom-cover- 500ms ease-out forwards; }\n  .tdom-turnContainer.tdom-cover.tdom-back.tdom-animation > *:last-child {\n    animation: tdom-turnContainer-tdom-cover-tdom-back 500ms ease-out forwards; }\n\n@keyframes tdom-dialog-show-mask {\n  from {\n    opacity: 0; }\n  to {\n    opacity: 1; } }\n\n@keyframes tdom-dialog-hide-mask {\n  from {\n    opacity: 1; }\n  to {\n    opacity: 0; } }\n\n@keyframes tdom-dialog-show-pt-scale {\n  from {\n    opacity: 0;\n    transform: scale(0.5, 0.5); }\n  to {\n    opacity: 1;\n    transform: none; } }\n\n@keyframes tdom-dialog-hide-pt-scale {\n  from {\n    opacity: 1;\n    transform: none; }\n  to {\n    opacity: 0;\n    transform: scale(0.5, 0.5); } }\n\n@keyframes tdom-dialog-show-pt-slideLeft {\n  from {\n    transform: translateX(100%); }\n  to {\n    transform: none; } }\n\n@keyframes tdom-dialog-hide-pt-slideLeft {\n  from {\n    transform: none; }\n  to {\n    transform: translateX(100%); } }\n\n.pt-mask {\n  position: fixed;\n  width: 100%;\n  height: 100%;\n  left: 0;\n  top: 0;\n  background: rgba(0, 0, 0, 0.5);\n  text-align: center;\n  display: none; }\n\n.pt-mask {\n  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#7f000000,endColorstr=#7f000000); }\n\n.pt-mask:before {\n  font-size: 0;\n  content: \".\";\n  display: block;\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  left: 0;\n  top: 0; }\n\n:root .pt-mask {\n  filter: none; }\n\n:root .pt-mask:before {\n  content: none; }\n\n.pt-application > .pt-mask.pt-busy {\n  display: block; }\n\n.tdom-dialog {\n  position: relative; }\n  .tdom-dialog > .pt-dialog {\n    position: fixed;\n    background: transparent;\n    box-shadow: 5px 5px 5px #000; }\n    .tdom-dialog > .pt-dialog > *:first-child {\n      height: 100%;\n      width: 100%; }\n    .tdom-dialog > .pt-dialog.tdom-wrapWidth > *:first-child {\n      width: auto; }\n    .tdom-dialog > .pt-dialog.tdom-wrapHeight > *:first-child {\n      height: auto; }\n  .tdom-dialog.pt-masked > .pt-mask {\n    display: block; }\n  .tdom-dialog.pt-Closed {\n    display: none; }\n  .tdom-dialog .pt-body {\n    overflow-x: hidden;\n    overflow-y: auto; }\n\n.tdom-dialog.tdom-animation-show > .pt-dialog {\n  box-shadow: none;\n  overflow: hidden; }\n\n.tdom-dialog.tdom-animation-show > .pt-mask {\n  animation: tdom-dialog-show-mask 500ms ease-out forwards; }\n\n.tdom-dialog.tdom-animation-hide > .pt-dialog {\n  box-shadow: none;\n  overflow: hidden; }\n\n.tdom-dialog.tdom-animation-hide > .pt-mask {\n  animation: tdom-dialog-hide-mask 500ms ease-out forwards; }\n\n.tdom-dialog.pt-scale.tdom-animation-show > .pt-dialog > *:first-child {\n  animation: tdom-dialog-show-pt-scale 500ms ease-out forwards; }\n\n.tdom-dialog.pt-scale.tdom-animation-hide > .pt-dialog > *:first-child {\n  animation: tdom-dialog-hide-pt-scale 500ms ease-out forwards; }\n\n.tdom-dialog.pt-slideLeft.tdom-animation-show > .pt-dialog > *:first-child {\n  animation: tdom-dialog-show-pt-slideLeft 500ms ease-out forwards; }\n\n.tdom-dialog.pt-slideLeft.tdom-animation-hide > .pt-dialog > *:first-child {\n  animation: tdom-dialog-hide-pt-slideLeft 500ms ease-out forwards; }\n", ""]);
 
 	// exports
 
 
-/***/ },
+/***/ }),
 /* 4 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	/*
 		MIT License http://www.opensource.org/licenses/mit-license.php
@@ -838,9 +824,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 
-/***/ },
+/***/ }),
 /* 5 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/*
 		MIT License http://www.opensource.org/licenses/mit-license.php
@@ -1090,13 +1076,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 
-/***/ },
+/***/ }),
 /* 6 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
 
 	module.exports = "<div>\r\n\t<div data-dom=\"mask\"></div>\r\n\t<div data-dom=\"dialog\">\r\n\t\t<div data-dom=\"body\"></div>\r\n\t</div>\r\n</div>";
 
-/***/ }
+/***/ })
 /******/ ])
 });
 ;

@@ -16,18 +16,16 @@ gulp.task("tsc", function () {
     ]);
 });
 gulp.task("tscdoc", function () {
-    return gulp.src(SRC + "/**/*.ts")
+    return gulp.src("./src/**/*.ts")
         .pipe(typedoc({
-            // TypeScript options (see typescript docs) 
             module: "amd",
             target: "es6",
-            includeDeclarations: false,
-            // Output options (see typedoc docs) 
-            out: DIST + "/docs",
-            //json: "output/to/file.json",
-            // TypeDoc options (see typedoc docs) 
-            theme : "default",//minimal
-            name: "tomato",
+            includeDeclarations: true,
+            out: "./docs",
+            theme : "minimal",
+            name: "tomato-jquery",
+            excludePrivate: true, 
+            excludeExternals: true,
             ignoreCompilerErrors: false,
             version: true,
         }))
