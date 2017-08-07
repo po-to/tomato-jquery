@@ -921,7 +921,36 @@ img { max-width: 100%; }
 	<div class="content-wrap">
 		<div class="tsd-panel tsd-typography">
 			<h1 id="tomato-jquery">tomato-jquery</h1>
-			<p>The web framework implements tomato with JQuery</p>
+			<p>tomato-jquery是基于tomato的实现与扩展，它采用jquery来实现tomato.IComponent接口，并且根据实际项目经验，在tomato的基础上具体化了某些功能，丰富了某些类库，固化了某些模式。它是优化实践、落地tomato思路的一套战术解决方案。</p>
+			<h1 id="-">项目主页</h1>
+			<p><a href="http://www.po-to.org/page/articles/tomato_jquery/s01">www.po-to.org</a></p>
+			<h1 id="-">仓库</h1>
+			<p><a href="https://github.com/po-to/tomato-jquery">Github</a></p>
+			<h1 id="-">兼容</h1>
+			<p>tomato-jquery采用“优雅降级”的理念兼容IE8及以上浏览器，在主流现代浏览器中均有很好的用户体验。</p>
+			<h1 id="-">依赖</h1>
+			<ul>
+				<li>tomato：tomato-jquery主要作用是实现和扩展tomato</li>
+				<li>jquery：jquery对象用来封装Dom</li>
+			</ul>
+			<h1 id="-">安装</h1>
+			<ul>
+				<li>使用NPM安装：npm install @po-to/tomato-jquery</li>
+				<li>手动下载安装：<a href="https://github.com/po-to/tomato-jquery">Github</a></li>
+			</ul>
+			<h1 id="-">引入</h1>
+			<p>使用AMD标准模块化，推荐使用requireJS引入</p>
+			<h1 id="-">文档</h1>
+			<p><a href="http://www.po-to.org/static/api/tomato_jquery">API</a></p>
+			<h1 id="-">设置</h1>
+			<p>tomato-jquery中的设置主要通过其对外函数setConfig()来实现：</p>
+			<pre><code><span class="hljs-keyword">export</span> <span class="hljs-keyword">declare</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">setConfig</span>(<span class="hljs-params">data: {
+    dialogZIndexStart?: <span class="hljs-built_in">number</span>;
+}</span>): <span class="hljs-title">void</span></span>;
+</code></pre><p>从上面代码可以看出，tomato可以设置的选项主要有一项：</p>
+			<ul>
+				<li>dialogZIndexStart?: number<br>Dialog弹窗的起始z-index值，默认为1000。</li>
+			</ul>
 		</div>
 		<div style="position:relative;"><a name="typedoc-main-index" class="tsd-anchor"></a></div>
 		<section class="tsd-panel-group tsd-index-group">
