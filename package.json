@@ -1,6 +1,6 @@
 {
   "name": "@po-to/tomato-jquery",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "tomato-jquery是采用jquery作“适配层”来实现和扩展tomato，所以在学习本章之前，请先学习tomato和jquery框架",
   "homepage": "http://www.po-to.org",
   "main": "tomato-jquery.js",
