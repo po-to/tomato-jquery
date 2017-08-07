@@ -1,4 +1,4 @@
-import * as tomato from "@po-to@tomato";
+import * as tomato from "@po-to/tomato";
 import css = require("./css");
 import tpl_Dialog = require('./tpl.Dialog');
 
@@ -102,7 +102,7 @@ export const TurnEffect = {
     cover: "tdom-cover",
 }
 
-declare module "@po-to@tomato"{
+declare module "@po-to/tomato"{
     interface IDialogEffect{
         swipeUp: string;
         swipeDown: string;
